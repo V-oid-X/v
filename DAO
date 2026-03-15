@@ -1,0 +1,84 @@
+-- Rayfield
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Demon Arena",
+    LoadingTitle = "loading...",
+    LoadingSubtitle = "by kynexl",
+    ConfigurationSaving = {Enabled = false}
+})
+
+local Tab = Window:CreateTab("Train", 4483362458)
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TrainSystem = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("TrainSystem")
+
+local ClickRemote = TrainSystem:WaitForChild("ReqClickTrain")
+local SpeedRemote = TrainSystem:WaitForChild("ReqUpdateTrainSpeed")
+
+-- Variables
+local AutoClick = false
+local AutoSpeed = false
+local TrainSpeed = 3
+local ThreadCount = 50
+
+-- SPEED SLIDER
+Tab:CreateSlider({
+    Name = "Train Speed",
+    Range = {1,1000000},
+    Increment = 1,
+    CurrentValue = 3,
+    Callback = function(v)
+        TrainSpeed = v
+    end
+})
+
+-- THREAD COUNT SLIDER
+Tab:CreateSlider({
+    Name = "Thread Amount",
+    Range = {1,100},
+    Increment = 1,
+    CurrentValue = 50,
+    Callback = function(v)
+        ThreadCount = v
+    end
+})
+
+-- AUTO CLICK
+Tab:CreateToggle({
+    Name = "Auto Clicker",
+    CurrentValue = false,
+    Callback = function(v)
+        AutoClick = v
+
+        if v then
+            for i = 1,ThreadCount do
+                task.spawn(function()
+                    while AutoClick do
+                        ClickRemote:InvokeServer()
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- TRAIN SPEED SPAM
+Tab:CreateToggle({
+    Name = "Train Speed",
+    CurrentValue = false,
+    Callback = function(v)
+        AutoSpeed = v
+
+        if v then
+            for i = 1,ThreadCount do
+                task.spawn(function()
+                    while AutoSpeed do
+                        SpeedRemote:InvokeServer(TrainSpeed)
+                    end
+                end)
+            end
+        end
+    end
+})
