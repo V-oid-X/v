@@ -37,7 +37,7 @@ Tab:CreateSlider({
 -- THREAD COUNT SLIDER
 Tab:CreateSlider({
     Name = "Thread Amount",
-    Range = {1,10000},
+    Range = {1,500},
     Increment = 1,
     CurrentValue = 50,
     Callback = function(v)
