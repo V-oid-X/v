@@ -1,0 +1,96 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "KynexlzUI"
+gui.ResetOnSpawn = false
+
+-- Main Frame
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 260, 0, 320)
+frame.Position = UDim2.new(0.5, -130, 0.5, -160)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+-- UI Corner
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 12)
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,40)
+title.BackgroundTransparency = 1
+title.Text = "Kynexlz"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+
+-- Layout
+local layout = Instance.new("UIListLayout", frame)
+layout.Padding = UDim.new(0,8)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+title.LayoutOrder = 0
+
+-- Toggle Creator
+local function createToggle(name)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(0.9,0,0,40)
+	btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 16
+	btn.Text = name .. ": OFF"
+	
+	local c = Instance.new("UICorner", btn)
+	c.CornerRadius = UDim.new(0,10)
+	
+	local enabled = false
+	
+	btn.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		btn.Text = name .. ": " .. (enabled and "ON" or "OFF")
+		
+		-- Hook your own game logic here
+		print(name, enabled)
+	end)
+end
+
+-- Toggles (safe placeholders)
+createToggle("Fly")
+createToggle("NoClip")
+createToggle("ESP")
+createToggle("God")
+
+-- Speed Slider Label
+local speedLabel = Instance.new("TextLabel", frame)
+speedLabel.Size = UDim2.new(0.9,0,0,30)
+speedLabel.BackgroundTransparency = 1
+speedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+speedLabel.Font = Enum.Font.Gotham
+speedLabel.Text = "Speed: 16"
+
+-- Slider
+local slider = Instance.new("TextBox", frame)
+slider.Size = UDim2.new(0.9,0,0,40)
+slider.BackgroundColor3 = Color3.fromRGB(30,30,30)
+slider.TextColor3 = Color3.fromRGB(255,255,255)
+slider.PlaceholderText = "Enter Speed..."
+slider.Text = ""
+
+local sc = Instance.new("UICorner", slider)
+sc.CornerRadius = UDim.new(0,10)
+
+slider.FocusLost:Connect(function()
+	local num = tonumber(slider.Text)
+	if num then
+		speedLabel.Text = "Speed: " .. num
+		
+		-- Hook into your own game
+		local char = player.Character
+		if char and char:FindFirstChild("Humanoid") then
+			char.Humanoid.WalkSpeed = num
+		end
+	end
+end)
