@@ -1,81 +1,141 @@
---// Create GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "kynexlzGui"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 260, 0, 180)
-Frame.Position = UDim2.new(0.5, -130, 0.5, -90)
-Frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-Frame.BorderSizePixel = 2
-Frame.BorderColor3 = Color3.fromRGB(255,0,0)
-Frame.Parent = ScreenGui
+--// GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "kynexlzGui"
 
--- UI Corner (modern look)
-local UICorner = Instance.new("UICorner", Frame)
-UICorner.CornerRadius = UDim.new(0, 10)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 260, 0, 260)
+frame.Position = UDim2.new(0.5, -130, 0.5, -130)
+frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+frame.BorderColor3 = Color3.fromRGB(255,0,0)
+frame.BorderSizePixel = 2
 
--- Title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.BackgroundTransparency = 1
-Title.Text = "kynexlz"
-Title.TextColor3 = Color3.fromRGB(255,0,0)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 24
-Title.Parent = Frame
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
--- Input box
-local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(0.8, 0, 0, 40)
-TextBox.Position = UDim2.new(0.1, 0, 0.35, 0)
-TextBox.PlaceholderText = "Enter WalkSpeed..."
-TextBox.Text = ""
-TextBox.BackgroundColor3 = Color3.fromRGB(20,20,20)
-TextBox.TextColor3 = Color3.fromRGB(255,255,255)
-TextBox.Font = Enum.Font.Gotham
-TextBox.TextSize = 16
-TextBox.Parent = Frame
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,35)
+title.BackgroundTransparency = 1
+title.Text = "kynexlz"
+title.TextColor3 = Color3.fromRGB(255,0,0)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
 
-local Corner2 = Instance.new("UICorner", TextBox)
-Corner2.CornerRadius = UDim.new(0, 8)
+--// WalkSpeed Box
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(0.8,0,0,35)
+box.Position = UDim2.new(0.1,0,0.2,0)
+box.PlaceholderText = "WalkSpeed..."
+box.BackgroundColor3 = Color3.fromRGB(20,20,20)
+box.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", box)
 
--- Button
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(0.8, 0, 0, 40)
-Button.Position = UDim2.new(0.1, 0, 0.65, 0)
-Button.Text = "Set Speed"
-Button.BackgroundColor3 = Color3.fromRGB(30,0,0)
-Button.TextColor3 = Color3.fromRGB(255,0,0)
-Button.Font = Enum.Font.GothamBold
-Button.TextSize = 16
-Button.Parent = Frame
+local setBtn = Instance.new("TextButton", frame)
+setBtn.Size = UDim2.new(0.8,0,0,30)
+setBtn.Position = UDim2.new(0.1,0,0.35,0)
+setBtn.Text = "Set Speed"
+setBtn.BackgroundColor3 = Color3.fromRGB(30,0,0)
+setBtn.TextColor3 = Color3.fromRGB(255,0,0)
+Instance.new("UICorner", setBtn)
 
-local Corner3 = Instance.new("UICorner", Button)
-Corner3.CornerRadius = UDim.new(0, 8)
+setBtn.MouseButton1Click:Connect(function()
+	local speed = tonumber(box.Text)
+	if speed and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.WalkSpeed = speed
+	end
+end)
 
--- WalkSpeed Function
-Button.MouseButton1Click:Connect(function()
-	local speed = tonumber(TextBox.Text)
-	if speed then
-		local player = game.Players.LocalPlayer
-		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			player.Character.Humanoid.WalkSpeed = speed
+--// TOGGLE TEMPLATE
+local function createToggle(name, posY)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(0.8,0,0,30)
+	btn.Position = UDim2.new(0.1,0,posY,0)
+	btn.Text = name.." (OFF)"
+	btn.BackgroundColor3 = Color3.fromRGB(20,0,0)
+	btn.TextColor3 = Color3.fromRGB(255,0,0)
+	Instance.new("UICorner", btn)
+	return btn
+end
+
+local infJumpBtn = createToggle("Infinite Jump", 0.5)
+local flyBtn = createToggle("Fly", 0.65)
+local noclipBtn = createToggle("NoClip", 0.8)
+
+--// STATES
+local infJump = false
+local flying = false
+local noclip = false
+
+--// Infinite Jump
+UIS.JumpRequest:Connect(function()
+	if infJump and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
+
+infJumpBtn.MouseButton1Click:Connect(function()
+	infJump = not infJump
+	infJumpBtn.Text = "Infinite Jump ("..(infJump and "ON" or "OFF")..")"
+end)
+
+--// Fly
+local bodyVel, bodyGyro
+flyBtn.MouseButton1Click:Connect(function()
+	flying = not flying
+	flyBtn.Text = "Fly ("..(flying and "ON" or "OFF")..")"
+
+	local char = player.Character
+	if not char then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+
+	if flying then
+		bodyVel = Instance.new("BodyVelocity", hrp)
+		bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
+		bodyVel.Velocity = Vector3.zero
+
+		bodyGyro = Instance.new("BodyGyro", hrp)
+		bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
+		bodyGyro.CFrame = hrp.CFrame
+
+		RunService.RenderStepped:Connect(function()
+			if flying and hrp then
+				local moveDir = player.Character.Humanoid.MoveDirection
+				bodyVel.Velocity = moveDir * 60
+				bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+			end
+		end)
+	else
+		if bodyVel then bodyVel:Destroy() end
+		if bodyGyro then bodyGyro:Destroy() end
+	end
+end)
+
+--// NoClip
+RunService.Stepped:Connect(function()
+	if noclip and player.Character then
+		for _,v in pairs(player.Character:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = false
+			end
 		end
 	end
 end)
 
--- Mobile Draggable Support
-local UIS = game:GetService("UserInputService")
+noclipBtn.MouseButton1Click:Connect(function()
+	noclip = not noclip
+	noclipBtn.Text = "NoClip ("..(noclip and "ON" or "OFF")..")"
+end)
 
-local dragging = false
-local dragInput, dragStart, startPos
+--// Mobile Drag
+local dragging, dragInput, dragStart, startPos
 
-Frame.InputBegan:Connect(function(input)
+frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = true
 		dragStart = input.Position
-		startPos = Frame.Position
+		startPos = frame.Position
 
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
@@ -85,7 +145,7 @@ Frame.InputBegan:Connect(function(input)
 	end
 end)
 
-Frame.InputChanged:Connect(function(input)
+frame.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
 		dragInput = input
 	end
@@ -94,7 +154,7 @@ end)
 UIS.InputChanged:Connect(function(input)
 	if input == dragInput and dragging then
 		local delta = input.Position - dragStart
-		Frame.Position = UDim2.new(
+		frame.Position = UDim2.new(
 			startPos.X.Scale,
 			startPos.X.Offset + delta.X,
 			startPos.Y.Scale,
