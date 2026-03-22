@@ -1,96 +1,104 @@
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "KynexlzUI"
-gui.ResetOnSpawn = false
+--// Create GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "kynexlzGui"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Main Frame
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 260, 0, 320)
-frame.Position = UDim2.new(0.5, -130, 0.5, -160)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 260, 0, 180)
+Frame.Position = UDim2.new(0.5, -130, 0.5, -90)
+Frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+Frame.BorderSizePixel = 2
+Frame.BorderColor3 = Color3.fromRGB(255,0,0)
+Frame.Parent = ScreenGui
 
--- UI Corner
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
+-- UI Corner (modern look)
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 10)
 
 -- Title
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,0,0,40)
-title.BackgroundTransparency = 1
-title.Text = "Kynexlz"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "kynexlz"
+Title.TextColor3 = Color3.fromRGB(255,0,0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.Parent = Frame
 
--- Layout
-local layout = Instance.new("UIListLayout", frame)
-layout.Padding = UDim.new(0,8)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+-- Input box
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(0.8, 0, 0, 40)
+TextBox.Position = UDim2.new(0.1, 0, 0.35, 0)
+TextBox.PlaceholderText = "Enter WalkSpeed..."
+TextBox.Text = ""
+TextBox.BackgroundColor3 = Color3.fromRGB(20,20,20)
+TextBox.TextColor3 = Color3.fromRGB(255,255,255)
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextSize = 16
+TextBox.Parent = Frame
 
-title.LayoutOrder = 0
+local Corner2 = Instance.new("UICorner", TextBox)
+Corner2.CornerRadius = UDim.new(0, 8)
 
--- Toggle Creator
-local function createToggle(name)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0.9,0,0,40)
-	btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 16
-	btn.Text = name .. ": OFF"
-	
-	local c = Instance.new("UICorner", btn)
-	c.CornerRadius = UDim.new(0,10)
-	
-	local enabled = false
-	
-	btn.MouseButton1Click:Connect(function()
-		enabled = not enabled
-		btn.Text = name .. ": " .. (enabled and "ON" or "OFF")
-		
-		-- Hook your own game logic here
-		print(name, enabled)
-	end)
-end
+-- Button
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0.8, 0, 0, 40)
+Button.Position = UDim2.new(0.1, 0, 0.65, 0)
+Button.Text = "Set Speed"
+Button.BackgroundColor3 = Color3.fromRGB(30,0,0)
+Button.TextColor3 = Color3.fromRGB(255,0,0)
+Button.Font = Enum.Font.GothamBold
+Button.TextSize = 16
+Button.Parent = Frame
 
--- Toggles (safe placeholders)
-createToggle("Fly")
-createToggle("NoClip")
-createToggle("ESP")
-createToggle("God")
+local Corner3 = Instance.new("UICorner", Button)
+Corner3.CornerRadius = UDim.new(0, 8)
 
--- Speed Slider Label
-local speedLabel = Instance.new("TextLabel", frame)
-speedLabel.Size = UDim2.new(0.9,0,0,30)
-speedLabel.BackgroundTransparency = 1
-speedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-speedLabel.Font = Enum.Font.Gotham
-speedLabel.Text = "Speed: 16"
-
--- Slider
-local slider = Instance.new("TextBox", frame)
-slider.Size = UDim2.new(0.9,0,0,40)
-slider.BackgroundColor3 = Color3.fromRGB(30,30,30)
-slider.TextColor3 = Color3.fromRGB(255,255,255)
-slider.PlaceholderText = "Enter Speed..."
-slider.Text = ""
-
-local sc = Instance.new("UICorner", slider)
-sc.CornerRadius = UDim.new(0,10)
-
-slider.FocusLost:Connect(function()
-	local num = tonumber(slider.Text)
-	if num then
-		speedLabel.Text = "Speed: " .. num
-		
-		-- Hook into your own game
-		local char = player.Character
-		if char and char:FindFirstChild("Humanoid") then
-			char.Humanoid.WalkSpeed = num
+-- WalkSpeed Function
+Button.MouseButton1Click:Connect(function()
+	local speed = tonumber(TextBox.Text)
+	if speed then
+		local player = game.Players.LocalPlayer
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			player.Character.Humanoid.WalkSpeed = speed
 		end
+	end
+end)
+
+-- Mobile Draggable Support
+local UIS = game:GetService("UserInputService")
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+Frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+Frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		Frame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
 	end
 end)
